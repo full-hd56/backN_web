@@ -1,7 +1,8 @@
 import express from "express";
 import path from "path";
 import multer from "multer";
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from "crypto";
+//import { v4 as uuidv4 } from 'uuid';
 import fs from "fs";
 
 export const router = express.Router();
@@ -31,7 +32,7 @@ class FileMiddleware {
       },
       // กำหนดชื่อไฟล์ใหม่ให้ไม่ซ้ำโดยใช้ UUID ร่วมกับนามสกุลไฟล์เดิม
       filename: (_req, file, cb) => {
-        const uniqueSuffix = uuidv4();      
+        const uniqueSuffix = randomUUID();      
         const ext = file.originalname.split(".").pop();
         cb(null, `${uniqueSuffix}.${ext}`);
       },
