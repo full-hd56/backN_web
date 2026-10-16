@@ -9,7 +9,7 @@ import { TaskItem } from "../model/taskItem";
 
 export const router = express.Router();
 
-router.get("/", async (req, res) => {
+router.get("/customer", async (req, res) => {
     const [rows] = await conn.query("SELECT * FROM Customer");
     const trips = rows as Customer [];
     res.status(200);
@@ -19,7 +19,7 @@ router.get("/", async (req, res) => {
 
 
 //insert ลูกค้า
-router.post("/", async (req, res) => {
+router.post("/customer", async (req, res) => {
   try {
     const customer: Customer = req.body;
 
