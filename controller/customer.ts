@@ -2,14 +2,14 @@ import express from "express";
 import { conn } from "../dbconnect";
 //import { Trip } from "../model/trip";
 import { Customer } from "../model/customer";
-import { DeliveryTask } from "../model/deliveryTask"
+/*import { DeliveryTask } from "../model/deliveryTask"
 import { Order } from "../model/order";
 import { Rider } from "../model/rider";
-import { TaskItem } from "../model/taskItem";
+import { TaskItem } from "../model/taskItem";*/
 
 export const router = express.Router();
 
-router.get("/customer", async (req, res) => {
+router.get("/", async (req, res) => {
     const [rows] = await conn.query("SELECT * FROM Customer");
     const trips = rows as Customer [];
     res.status(200);
@@ -19,7 +19,7 @@ router.get("/customer", async (req, res) => {
 
 
 //insert ลูกค้า
-router.post("/customer", async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const customer: Customer = req.body;
 
