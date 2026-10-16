@@ -9,7 +9,8 @@ export const app = express();
 const allowedOrigins = [
   "http://127.0.0.1:5500",
   "http://localhost:3000",
-  "https://your-production-frontend.com",
+  "http://localhost:4200",
+  "https://frontend-eight-mu-10.vercel.app",
 ];
 
 app.use(
@@ -41,3 +42,5 @@ app.use("/", index);
 app.use("/trip", trip);
 app.use("/upload", upload);
 app.use("/uploads", express.static("uploads"));
+
+export default app;
