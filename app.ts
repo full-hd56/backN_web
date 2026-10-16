@@ -28,6 +28,10 @@ app.use(
   })
 );
 
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error(err);
+  res.status(500).json({ error: err.code || "ERROR", message: err.message });
+});
 //app.use("/", (req, res) => {
 //   res.send("Hello World!!!");
 // });
