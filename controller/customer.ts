@@ -1,10 +1,50 @@
 import express from "express";
 import { conn } from "../dbconnect";
-import { Trip } from "../model/trip";
+//import { Trip } from "../model/trip";
+import { Customer } from "../model/customer";
+import { DeliveryTask } from "../model/deliveryTask"
+import { Order } from "../model/order";
+import { Rider } from "../model/rider";
+import { TaskItem } from "../model/taskItem";
 
 export const router = express.Router();
 
 router.get("/", async (req, res) => {
+    const [rows] = await conn.query("SELECT * FROM Customer");
+    const trips = rows as Customer [];
+    res.status(200);
+    res.json(trips);
+    //res.send(rows);
+});
+
+
+//insert ลูกค้า
+router.post("/", async (req, res) => {
+  try {
+    const customer: Customer = req.body;
+
+    const sql =
+      "INSERT INTO `customers`(`name`, `phone`, `address_detail`, `latitude`, `longitude`) VALUES (?,?,?,?,?)";
+
+    const [result]: any = await conn.query(sql, [
+      customer.name,
+      customer.phone,
+      customer.address_detail,
+      customer.latitude,
+      customer.longitude,
+    ]);
+
+    res.status(201).json({
+      affected_row: result.affectedRows,
+      last_idx: result.insertId,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Insert failed" });
+  }
+});
+
+/*router.get("/", async (req, res) => {
     const [rows] = await conn.query("SELECT * FROM trip");
     const trips = rows as Trip [];
     res.status(200);
@@ -174,4 +214,4 @@ router.patch("/:id", async (req, res) => {
 // });
 // router.get("/:id", (req, res) => {
 //   res.send("Get in trip.ts id: " + req.params.id);
-// });
+// });*/

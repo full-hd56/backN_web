@@ -1,7 +1,7 @@
 import express from "express";
 import { router as index } from "./controller/index";
-import { router as trip } from "./controller/trip";
-import { router as upload } from "./controller/upload"
+import { router as customer } from "./controller/customer";
+//import { router as upload } from "./controller/upload"
 import cors from "cors";
 
 export const app = express();
@@ -28,23 +28,22 @@ app.use(
   })
 );
 
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error(err);
-  res.status(500).json({ error: err.code || "ERROR", message: err.message });
-});
-//app.use("/", (req, res) => {
-//   res.send("Hello World!!!");
-// });
-
 // แปลงข้อมูลแบบข้อความทั่วไป (Text Body)
 app.use(express.text());
 
 // แปลงข้อมูลรูปแบบ JSON (JSON Body)
 app.use(express.json());
 
+// ===== Routes =====
 app.use("/", index);
-app.use("/trip", trip);
-app.use("/upload", upload);
-app.use("/uploads", express.static("uploads"));
+app.use("/customer", customer);
+//app.use("/upload", upload);
+//app.use("/uploads", express.static("uploads"));
+
+// ===== ตัวจัดการ error (ต้องอยู่ท้ายสุดเสมอ) =====
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error(err);
+  res.status(500).json({ error: err.code || "ERROR", message: err.message });
+});
 
 export default app;

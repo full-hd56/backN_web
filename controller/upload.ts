@@ -1,4 +1,4 @@
-import express from "express";
+/*import express from "express";
 import path from "path";
 import multer from "multer";
 import { randomUUID } from "crypto";
@@ -65,4 +65,4 @@ router.get("/:filename", (req, res) => {
     // แสดงผลไฟล์บนเบราว์เซอร์ปกติ (เช่น แสดงรูปภาพ)
     res.sendFile(path.join(uploadsDir, filename));
   }
-});
+});*/
