@@ -10,7 +10,7 @@ import { TaskItem } from "../model/taskItem";*/
 export const router = express.Router();
 
 router.get("/", async (req, res) => {
-    const [rows] = await conn.query("SELECT * FROM Customer");
+    const [rows] = await conn.query("SELECT * FROM customers");
     const trips = rows as Customer [];
     res.status(200);
     res.json(trips);
