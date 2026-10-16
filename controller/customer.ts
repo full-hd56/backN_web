@@ -38,9 +38,9 @@ router.post("/", async (req, res) => {
       affected_row: result.affectedRows,
       last_idx: result.insertId,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
-    res.status(500).json({ error: "Insert failed" });
+    res.status(500).json({ error: error.code, message: error.message });
   }
 });
 
