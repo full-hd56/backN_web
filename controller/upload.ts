@@ -6,12 +6,20 @@ import fs from "fs";
 
 export const router = express.Router();
 
+// บน Vercel เขียนไฟล์ได้เฉพาะใน /tmp เท่านั้น (ไฟล์จะหายเมื่อ function รีสตาร์ท)
+const uploadsDir = process.env.VERCEL
+  ? path.join("/tmp", "uploads")
+  : path.join(__dirname, "../uploads");
+
 class FileMiddleware {
   constructor() {
-    const uploadsDir = path.join(__dirname, "../uploads");
-    if (!fs.existsSync(uploadsDir)) {
-      // สร้างโฟลเดอร์สำหรับอัปโหลดอัตโนมัติหากยังไม่มีอยู่
-      fs.mkdirSync(uploadsDir, { recursive: true });
+    try {
+      if (!fs.existsSync(uploadsDir)) {
+        // สร้างโฟลเดอร์สำหรับอัปโหลดอัตโนมัติหากยังไม่มีอยู่
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+    } catch (err) {
+      console.error("Cannot create uploads folder:", err);
     }
   }
 
@@ -19,7 +27,7 @@ class FileMiddleware {
     storage: multer.diskStorage({
       // กำหนดปลายทางเก็บไฟล์
       destination: (_req, _file, cb) => {
-        cb(null, path.join(__dirname, "../uploads"));
+        cb(null, uploadsDir);
       },
       // กำหนดชื่อไฟล์ใหม่ให้ไม่ซ้ำโดยใช้ UUID ร่วมกับนามสกุลไฟล์เดิม
       filename: (_req, file, cb) => {
@@ -51,9 +59,9 @@ router.get("/:filename", (req, res) => {
   
   if (download === "true") {
     // บังคับให้ดาวน์โหลดลงเครื่อง
-    res.download(path.join(__dirname, "../uploads", filename));
+    res.download(path.join(uploadsDir, filename));
   } else {
     // แสดงผลไฟล์บนเบราว์เซอร์ปกติ (เช่น แสดงรูปภาพ)
-    res.sendFile(path.join(__dirname, "../uploads", filename));
+    res.sendFile(path.join(uploadsDir, filename));
   }
 });
