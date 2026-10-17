@@ -1,10 +1,13 @@
-export type OrderStatus = "PENDING" | "ASSIGNED" | "DELIVERED" | "CANCELLED";
+﻿export type OrderStatus = "PENDING" | "ROUTING" | "ASSIGNED" | "COMPLETED" | "CANCELLED";
 
 export interface Order {
-    id:          number;
-    customer_id: number;
-    box_amount:  number;   // 1-3 กล่อง
-    total_price: number;   // box_amount * 65
-    status:      OrderStatus;
-    created_at:  string;
+  id: string;
+  customer_name: string;
+  phone: string;
+  latitude: number;
+  longitude: number;
+  box_quantity: number;
+  status: OrderStatus;
+  created_at: string;
+  distance_from_depot_km?: number;
 }

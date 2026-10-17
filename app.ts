@@ -1,6 +1,7 @@
 import express from "express";
 import { router as index } from "./controller/index";
 import { router as customer } from "./controller/customer";
+import { ordersRouter, routingRouter } from "./controller/orders";
 //import { router as upload } from "./controller/upload"
 import cors from "cors";
 
@@ -31,7 +32,7 @@ app.use(
         callback(new Error("Not allowed by CORS"));
       }
     },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
@@ -45,6 +46,8 @@ app.use(express.json());
 // ===== Routes =====
 app.use("/", index);
 app.use("/customer", customer);
+app.use("/api/v1/orders", ordersRouter);
+app.use("/api/v1/routing", routingRouter);
 //app.use("/upload", upload);
 //app.use("/uploads", express.static("uploads"));
 
