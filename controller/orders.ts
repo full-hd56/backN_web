@@ -144,7 +144,7 @@ async function fetchOrder(id: number): Promise<OrderRow | undefined> {
 router.get("/", async (req: Request, res: Response) => {
   try {
     const clauses: string[] = [];
-    const values: string[] = [];
+    const values: (string | number)[] = [];
     const rawStatus = typeof req.query["status"] === "string" ? req.query["status"].toUpperCase() : "";
 
     if (rawStatus) {
@@ -162,9 +162,36 @@ router.get("/", async (req: Request, res: Response) => {
     }
 
     const where = clauses.length ? ` WHERE ${clauses.join(" AND ")}` : "";
-    const [rows] = await conn.execute<OrderRow[]>(`${orderSelect}${where} ORDER BY o.created_at DESC, o.id DESC`, values);
+
+    const limitParam = req.query["limit"];
+    const pageParam = req.query["page"];
+    let paginationSql = "";
+    let total = 0;
+
+    if (limitParam !== undefined) {
+      const limit = Math.max(1, Math.min(1000, Number(limitParam) || 50));
+      const page = Math.max(1, Number(pageParam) || 1);
+      const offset = (page - 1) * limit;
+      paginationSql = ` LIMIT ${limit} OFFSET ${offset}`;
+
+      const [countRows] = await conn.execute<RowDataPacket[]>(
+        `SELECT COUNT(*) as total FROM orders o JOIN customers c ON c.id = o.customer_id${where}`,
+        values
+      );
+      total = Number(countRows[0]?.["total"] ?? 0);
+    }
+
+    const [rows] = await conn.execute<OrderRow[]>(
+      `${orderSelect}${where} ORDER BY o.created_at DESC, o.id DESC${paginationSql}`,
+      values
+    );
     const data = rows.map(asOrder);
-    return res.json({ success: true, count: data.length, total: data.length, data });
+    return res.json({
+      success: true,
+      count: data.length,
+      total: limitParam !== undefined ? total : data.length,
+      data,
+    });
   } catch (error) {
     return sendServerError(res, error);
   }
