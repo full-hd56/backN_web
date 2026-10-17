@@ -46,8 +46,8 @@ app.use(express.json());
 // ===== Routes =====
 app.use("/", index);
 app.use("/customer", customer);
-app.use("/api/v1/orders", ordersRouter);
-app.use("/api/v1/routing", routingRouter);
+app.use("/api/orders", ordersRouter);
+app.use("/api/routing", routingRouter);
 //app.use("/upload", upload);
 //app.use("/uploads", express.static("uploads"));
 
