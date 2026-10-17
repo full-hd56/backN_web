@@ -14,7 +14,7 @@ router.get("/", async (req, res) => {
     const trips = rows as Customer [];
     res.status(200);
     res.json(trips);
-    //res.send(rows);
+    res.send(rows);
 });
 
 
@@ -38,6 +38,35 @@ router.post("/", async (req, res) => {
       affected_row: result.affectedRows,
       last_idx: result.insertId,
     });
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).json({ error: error.code, message: error.message });
+  }
+});
+
+//แก้ไขลูกค้า
+router.put("/:id", async (req, res) => {
+  try {
+    const customer: Customer = req.body;
+
+    const sql =
+      "UPDATE `customers` SET `name`=?, `phone`=?, `address_detail`=?, `latitude`=?, `longitude`=? WHERE `id`=?";
+
+    const [result]: any = await conn.query(sql, [
+      customer.name,
+      customer.phone,
+      customer.address_detail,
+      customer.latitude,
+      customer.longitude,
+      req.params.id,
+    ]);
+
+    // ถ้าไม่มีลูกค้า id นี้ใน database
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "ไม่พบลูกค้า" });
+    }
+
+    res.status(200).json({ affected_row: result.affectedRows });
   } catch (error: any) {
     console.error(error);
     res.status(500).json({ error: error.code, message: error.message });
