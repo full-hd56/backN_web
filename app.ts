@@ -6,11 +6,19 @@ import cors from "cors";
 
 export const app = express();
 
+/*const allowedOrigins = [
+  "http://127.0.0.1:5500",
+  "http://localhost:3000",
+  "http://localhost:4200",
+  "https://frontend-eight-mu-10.vercel.app",
+];*/
+
 const allowedOrigins = [
   "http://127.0.0.1:5500",
   "http://localhost:3000",
   "http://localhost:4200",
   "https://frontend-eight-mu-10.vercel.app",
+  "https://web2-ten-green.vercel.app",   // ← เพิ่มบรรทัดนี้
 ];
 
 app.use(
