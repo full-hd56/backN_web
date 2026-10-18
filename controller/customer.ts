@@ -73,6 +73,25 @@ router.put("/:id", async (req, res) => {
   }
 });
 
+//ลบลูกค้า
+router.delete("/:id", async (req, res) => {
+  try {
+    let id = req.params.id;
+    const [result] = await conn.query("DELETE FROM customers WHERE id = ?", [id]);
+    const deleteResult = result as any;
+
+    // ถ้าไม่มีแถวถูกลบ แปลว่าไม่มีลูกค้า id นี้ใน database
+    if (deleteResult.affectedRows === 0) {
+      return res.status(404).json({ error: "ไม่พบลูกค้า" });
+    }
+
+    res.status(200).json({ affected_row: deleteResult.affectedRows });
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).json({ error: error.code, message: error.message });
+  }
+});
+
 /*router.get("/", async (req, res) => {
     const [rows] = await conn.query("SELECT * FROM trip");
     const trips = rows as Trip [];
