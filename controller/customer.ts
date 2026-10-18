@@ -11,9 +11,9 @@ export const router = express.Router();
 
 router.get("/", async (req, res) => {
     const [rows] = await conn.query("SELECT * FROM customers");
-    const trips = rows as Customer [];
+    const customer = rows as Customer [];
     res.status(200);
-    res.json(trips);
+    res.json(customer);
     res.send(rows);
 });
 

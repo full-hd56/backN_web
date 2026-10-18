@@ -2,6 +2,7 @@
 
 export interface Order {
   id: string;
+  customer_id: number;     //แก้เพิ่ม
   customer_name: string;
   phone: string;
   latitude: number;
