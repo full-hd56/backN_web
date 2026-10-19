@@ -3,22 +3,17 @@ import { conn } from "../dbconnect";
 import { Order } from "../model/order";
 
 const router = express.Router();        //เส้นเกี่ยวกับออเดอร์: GET, POST, PUT, DELETE
-const routingRouter = express.Router(); //เส้นจัดเส้นทาง: /trigger
+//const routingRouter = express.Router(); //เส้นจัดเส้นทาง /trigger
 
-const BOX_PRICE = 65; // ราคาขาย ต่อกล่อง
-const BOX_COST = 40;  // ต้นทุน ต่อกล่อง
+const BOX_PRICE = 65; // ราคาขายต่อกล่อง
+const BOX_COST = 40;  // ต้นทุนต่อกล่อง
 
-// SQL ดึงออเดอร์ + ข้อมูลลูกค้า (ใช้ซ้ำหลายที่)
 // ใน DB เก็บสถานะส่งแล้วเป็น DELIVERED แต่หน้าเว็บใช้คำว่า COMPLETED
 
 // พิกัดใน DB ออกมาเป็นข้อความ แปลงเป็นตัวเลขก่อนส่งให้หน้าเว็บ
 function toNumber(rows: any[]) {
     return rows.map((r) => ({ ...r, latitude: Number(r.latitude), longitude: Number(r.longitude) }));
 }
-
-
-
-// ================= ออเดอร์ =================
 
 // ดูออเดอร์ทั้งหมด  GET /api/orders  (กรองได้ ?status=PENDING&search=สมชาย)
 router.get("/", async (req, res) => {
@@ -223,40 +218,4 @@ router.post("/mockup", async (req, res) => {
     }
 });
 
-// ================= จัดเส้นทาง =================
-
-// เปลี่ยนออเดอร์ PENDING ทั้งหมดเป็น ROUTING  POST /api/routing/trigger
-routingRouter.post("/trigger", async (req, res) => {
-    try {
-        const [rows]: any = await conn.query(`
-  SELECT
-    CAST(o.id AS CHAR) AS id,
-    o.customer_id,
-    c.name AS customer_name,
-    c.phone,
-    c.latitude,
-    c.longitude,
-    o.box_amount AS box_quantity,
-    IF(o.status = 'DELIVERED', 'COMPLETED', o.status) AS status,
-    o.created_at
-  FROM orders o
-  JOIN customers c ON c.id = o.customer_id` + " WHERE o.status = 'PENDING'");
-
-
-        //if (rows.length === 0) return res.status(409).json({ error: "ไม่มีออเดอร์ PENDING" });
-        if (rows.length === 0) return res.status(409).json({ error: "ไม่มีออเดอร์สถานะ PENDING" });
-
-
-        await conn.query("UPDATE orders SET status = 'ROUTING' WHERE status = 'PENDING'");
-
-        res.json({
-            job_id: "JOB-" + Date.now(),
-            total_orders_routed: rows.length,
-            data: toNumber(rows),
-        });
-    } catch (error: any) {
-        res.status(500).json({ error: error.code, message: error.message });
-    }
-});
-
-export { router as ordersRouter, routingRouter };
+export { router as ordersRouter };
