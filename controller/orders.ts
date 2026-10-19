@@ -179,6 +179,7 @@ router.delete("/:id", async (req, res) => {
 // ลบออเดอร์ทั้งหมด + ลูกค้าปลอม  DELETE /api/orders
 router.delete("/", async (req, res) => {
     try {
+        await conn.query("DELETE FROM delivery_tasks"); // ลบใบงาน task_items ถูกลบตาม
         await conn.query("DELETE FROM orders");
         await conn.query("DELETE FROM customers WHERE name LIKE 'Mock Customer%'");
         res.json({ success: true, data: null });
@@ -190,7 +191,8 @@ router.delete("/", async (req, res) => {
 // สร้างข้อมูลปลอม  POST /api/orders/mockup  body: { count: 10 }
 router.post("/mockup", async (req, res) => {
     try {
-        const count = Number(req.body?.count) || 10;
+        //const count = Number(req.body?.count) || 10;
+        const count = Number(req.body?.count) || 20 + Math.floor(Math.random() * 11); // สุ่ม 20-30 ออเดอร์
 
         for (let i = 1; i <= count; i++) {
             const fake = {
