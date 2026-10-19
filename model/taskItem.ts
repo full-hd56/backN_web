@@ -1,4 +1,4 @@
-export type ItemStatus = "PENDING" | "DELIVERED" | "FAILED";
+export type ItemStatus = "PENDING" | "DELIVERED" | "LATE";
 
 export interface TaskItem {
     id:              number;

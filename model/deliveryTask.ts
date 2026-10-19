@@ -3,7 +3,7 @@ export type TaskStatus = "PROPOSED" | "CONFIRMED" | "DELIVERED";
 export interface DeliveryTask {
     id:                number;
     task_number:       string;
-    rider_id:          number | null;
+    //rider_id:          number | null;  //ลบ rider
     date:              string;
     departure_time:    string;
     total_distance:    number;

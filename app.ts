@@ -2,6 +2,7 @@ import express from "express";
 import { router as index } from "./controller/index";
 import { router as customer } from "./controller/customer";
 import { ordersRouter, routingRouter } from "./controller/orders";
+import { router as delivery_task } from "./controller/delivery_task";
 //import { router as upload } from "./controller/upload"
 import cors from "cors";
 
@@ -48,6 +49,8 @@ app.use("/", index);
 app.use("/customer", customer);
 app.use("/api/orders", ordersRouter);
 app.use("/api/routing", routingRouter);
+app.use("/api/delivery_tasks", delivery_task);
+
 //app.use("/upload", upload);
 //app.use("/uploads", express.static("uploads"));
 
