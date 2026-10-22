@@ -229,8 +229,9 @@ router.patch("/items/:id/delivered", async (req, res) => {
 
     // บันทึกสถานะและเวลาที่กดส่ง (เฉพาะจุดที่ยังไม่ส่ง กันกดซ้ำ)
     const [result]: any = await conn.query(
-      "UPDATE task_items SET delivery_status = ?, actual_arrival = NOW() WHERE id = ? AND delivery_status = 'PENDING'",
-      [status, req.params.id]
+      //"UPDATE task_items SET delivery_status = ?, actual_arrival = NOW() WHERE id = ? AND delivery_status = 'PENDING'",
+      "UPDATE task_items SET delivery_status = ?, actual_arrival = DATE_ADD(NOW(), INTERVAL 7 HOUR) WHERE id = ? AND delivery_status = 'PENDING'",
+      [status, req.params.id]  //server อยู่ที่สิงคโปร์  ตั้งเวลาไทย INTERVAL 7 HOUR
     );
     if (result.affectedRows === 0) return res.status(400).json({ error: "ไม่พบจุดส่ง หรือส่งไปแล้ว" });
 
