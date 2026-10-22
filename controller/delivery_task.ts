@@ -213,6 +213,8 @@ router.post("/plan", async (req, res) => {
 
 
 // ไรเดอร์กด ส่งแล้ว  PATCH /api/delivery_tasks/items/1/delivered
+// ไรเดอร์กด ส่งแล้ว  PATCH /api/delivery_tasks/items/1/delivered
+// กดส่งหมด delivery_task  status เปลียน
 router.patch("/items/:id/delivered", async (req, res) => {
   try {
     //  เวลาไทย
@@ -225,16 +227,24 @@ router.patch("/items/:id/delivered", async (req, res) => {
     //  เกิน 12:30 ส่งช้า
     const status = now_time > "12:30" ? "LATE" : "DELIVERED";
 
-    // บันทึกสถานะและเวลาที่กดส่ง
+    // บันทึกสถานะและเวลาที่กดส่ง (เฉพาะจุดที่ยังไม่ส่ง กันกดซ้ำ)
     const [result]: any = await conn.query(
-      "UPDATE task_items SET delivery_status = ?, actual_arrival = NOW() WHERE id = ?",
+      "UPDATE task_items SET delivery_status = ?, actual_arrival = NOW() WHERE id = ? AND delivery_status = 'PENDING'",
       [status, req.params.id]
     );
-    if (result.affectedRows === 0) return res.status(404).json({ error: "ไม่พบจุดส่ง" });
+    if (result.affectedRows === 0) return res.status(400).json({ error: "ไม่พบจุดส่ง หรือส่งไปแล้ว" });
 
     // ออเดอร์ของจุดส่งนี้ เปลี่ยนเป็นส่งแล้ว หน้า orders จะขึ้น จัดส่งสำเร็จ
     await conn.query(
       "UPDATE orders SET status = 'DELIVERED' WHERE id = (SELECT order_id FROM task_items WHERE id = ?)",
+      [req.params.id]
+    );
+
+    // ใบงานส่ง order ครบ
+    await conn.query(
+      `UPDATE delivery_tasks SET status = 'DELIVERED'
+       WHERE id = (SELECT task_id FROM task_items WHERE id = ?)
+       AND NOT EXISTS (SELECT 1 FROM task_items WHERE task_id = delivery_tasks.id AND delivery_status = 'PENDING')`,
       [req.params.id]
     );
 
