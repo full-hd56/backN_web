@@ -5,7 +5,7 @@ export interface TaskItem {
     task_id:         number;
     order_id:        number;
     stop_sequence:   number;
-    est_arrival:     string | null;
+    //est_arrival:     string | null;
     actual_arrival:  string | null;
     delivery_status: ItemStatus;
 }

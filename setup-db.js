@@ -35,8 +35,6 @@ CREATE TABLE IF NOT EXISTS delivery_tasks (
     id INT AUTO_INCREMENT PRIMARY KEY,
     task_number VARCHAR(50) NOT NULL UNIQUE,
     rider_id INT DEFAULT NULL,
-    date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    departure_time VARCHAR(10) NOT NULL DEFAULT '11:30',
     total_distance DOUBLE NOT NULL DEFAULT 0.0,
     estimated_minutes INT NOT NULL DEFAULT 0,
     total_boxes INT NOT NULL DEFAULT 0,
@@ -56,7 +54,6 @@ CREATE TABLE IF NOT EXISTS task_items (
     task_id INT NOT NULL,
     order_id INT NOT NULL UNIQUE,
     stop_sequence INT NOT NULL,
-    est_arrival VARCHAR(10) DEFAULT NULL,
     actual_arrival DATETIME DEFAULT NULL,
     delivery_status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
     CONSTRAINT fk_task_items_task FOREIGN KEY (task_id)
