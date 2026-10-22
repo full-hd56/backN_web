@@ -57,6 +57,7 @@ router.get("/stats", async (req, res) => {
       SELECT
         COUNT(*) AS total_orders,
         IFNULL(SUM(IF(status <> 'CANCELLED', box_amount, 0)), 0) AS total_boxes,
+        IFNULL(SUM(IF(status = 'DELIVERED', box_amount, 0)), 0) AS delivered_boxes,
         IFNULL(SUM(status = 'PENDING'), 0)   AS pending_orders,
         IFNULL(SUM(status = 'ROUTING'), 0)   AS routing_orders,
         IFNULL(SUM(status = 'ASSIGNED'), 0)  AS assigned_orders,
@@ -66,6 +67,8 @@ router.get("/stats", async (req, res) => {
 
         const s = rows[0];
         const boxes = Number(s.total_boxes);
+        // ยอดขาย/กำไร นับเฉพาะกล่องที่ไรเดอร์กด "ส่งสำเร็จ" แล้ว (ออเดอร์ DELIVERED)
+        const delivered_boxes = Number(s.delivered_boxes);
 
         res.json({
             success: true,
@@ -77,9 +80,10 @@ router.get("/stats", async (req, res) => {
                 assigned_orders: Number(s.assigned_orders),
                 completed_orders: Number(s.completed_orders),
                 cancelled_orders: Number(s.cancelled_orders),
-                total_revenue_thb: boxes * BOX_PRICE,
-                total_cost_thb: boxes * BOX_COST,
-                gross_profit_thb: boxes * (BOX_PRICE - BOX_COST),
+                delivered_boxes: delivered_boxes,
+                total_revenue_thb: delivered_boxes * BOX_PRICE,
+                total_cost_thb: delivered_boxes * BOX_COST,
+                gross_profit_thb: delivered_boxes * (BOX_PRICE - BOX_COST),
             },
         });
     } catch (error: any) {
