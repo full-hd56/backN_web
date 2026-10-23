@@ -146,11 +146,12 @@ router.put("/:id", async (req, res) => {
 
         const customerId = body.customer_id;
 
+        // แก้ไขได้เฉพาะออเดอร์ที่ยังไม่อยู่ในใบงาน
         const [result]: any = await conn.query(
-            "UPDATE orders SET customer_id = ?, box_amount = ?, total_price = ? WHERE id = ?",
+            "UPDATE orders SET customer_id = ?, box_amount = ?, total_price = ? WHERE id = ? AND status IN ('PENDING', 'ROUTING')",
             [customerId, body.box_quantity, body.box_quantity * BOX_PRICE, req.params.id]
         );
-        if (result.affectedRows === 0) return res.status(404).json({ error: "ไม่พบออเดอร์" });
+        if (result.affectedRows === 0) return res.status(400).json({ error: "แก้ไขไม่ได้ ไม่พบออเดอร์ หรือออเดอร์อยู่ในใบงานแล้ว" });
 
         res.json({ success: true, data: { id: req.params.id } });
     } catch (error: any) {
@@ -161,7 +162,12 @@ router.put("/:id", async (req, res) => {
 // ยกเลิกออเดอร์  PATCH /api/orders/5/cancel
 router.patch("/:id/cancel", async (req, res) => {
     try {
-        await conn.query("UPDATE orders SET status = 'CANCELLED' WHERE id = ?", [req.params.id]);
+        // ยกเลิกได้เฉพาะออเดอร์ที่ยังไม่อยู่ในใบงาน
+        const [result]: any = await conn.query(
+            "UPDATE orders SET status = 'CANCELLED' WHERE id = ? AND status IN ('PENDING', 'ROUTING')",
+            [req.params.id]
+        );
+        if (result.affectedRows === 0) return res.status(400).json({ error: "ยกเลิกไม่ได้ ออเดอร์อยู่ในใบงานแล้ว" });
         res.json({ success: true, data: { id: req.params.id } });
     } catch (error: any) {
         res.status(500).json({ error: error.code, message: error.message });
