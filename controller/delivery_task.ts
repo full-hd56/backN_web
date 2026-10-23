@@ -71,34 +71,55 @@ function distance_km(a: any, b: any): number {
 
   return earth_radius * angle;
 }
-// - รับพิกัด 2 จุด (a และ b) แต่ละจุดมี lat, lng แล้วคืนค่าระยะทางเป็นกิโลเมตร
-// - lat/lng เป็น "มุม" ไม่ใช่ระยะทาง สูตรนี้หาว่า 2 จุดห่างกันกี่องศาบนโลก (angle)
-// - แล้วคูณด้วยรัศมีโลก (6371 กม.) จะได้ระยะทางจริง: ระยะทาง = รัศมีโลก × มุม
-// - เป็นระยะ "เส้นตรง" บนผิวโลก ไม่ใช่ระยะตามถนนจริง
-// - ตัวอย่าง: distance_km(ร้าน, บ้านลูกค้า) ได้ 1.25 แปลว่าห่างกัน 1.25 กม.
+// รับพิกัด 2 จุด (a และ b) แต่ละจุดมี lat, lng แล้วคืนค่าระยะทางเป็นกิโลเมตร
+// lat/lng เป็น "มุม" ไม่ใช่ระยะทาง สูตรนี้หาว่า 2 จุดห่างกันกี่องศาบนโลก (angle)
+// แล้วคูณด้วยรัศมีโลก (6371 กม.) จะได้ระยะทางจริง: ระยะทาง = รัศมีโลก × มุม
+// เป็นระยะ "เส้นตรง" บนผิวโลก ไม่ใช่ระยะตามถนนจริง
+// ตัวอย่าง: distance_km(ร้าน, บ้านลูกค้า) ได้ 1.25 แปลว่าห่างกัน 1.25 กม.
 
 // แปลงองศา เป็นเรเดียน
 function to_radian(degree: number): number {
   return (degree * Math.PI) / 180;
 }
-// - พิกัด lat/lng เก็บเป็น "องศา" เช่น 16.2468
-// - แต่ Math.sin / Math.cos ของ JavaScript รับค่าเป็น "เรเดียน"
-// - เลยต้องแปลงก่อน สูตร: เรเดียน = องศา × π ÷ 180
-// - ตัวอย่าง: to_radian(180) ได้ 3.14159... (π)
+// พิกัด lat/lng เก็บเป็น "องศา" เช่น 16.2468
+// แต่ Math.sin / Math.cos ของ JavaScript รับค่าเป็น "เรเดียน"
+// เลยต้องแปลงก่อน สูตร: เรเดียน = องศา × π ÷ 180
+// ตัวอย่าง: to_radian(180) ได้ 3.14159... (π)
  
 // หาออเดอร์ที่อยู่ใกล้จุดปัจจุบันที่สุด (คืนค่าเป็นลำดับใน array)
-function find_nearest(current_point: any, orders: any[]): number {
+// หาออเดอร์ที่อยู่ใกล้จุดปัจจุบันที่สุด "ตามถนนจริง" (คืนค่าเป็นลำดับใน array)
+// หาบ้านที่ใกล้ที่สุด "ตามถนนจริง"
+// ส่งกลับ 2 อย่าง: index = บ้านหลังไหน, km = ห่างกี่กม.
+async function find_nearest(current_point: any, orders: any[]) {
   let nearest = 0;
-  for (let i = 0; i < orders.length; i++) {
-    if (distance_km(current_point, orders[i]) < distance_km(current_point, orders[nearest])) {
-      nearest = i;
+  try {
+    // ถาม OSRM: จากจุดที่ยืนอยู่ ไปทุกบ้าน ตามถนนไกลเท่าไหร่
+    const points = [current_point, ...orders];//เอาจุดที่ยืนอยู่ไว้หน้าสุด แล้วต่อด้วยบ้านทุกหลัง ... แตก array orders ออกมาต่อท้าย
+                                              //ตัวอย่าง [ร้าน, บ้านA, บ้านB, บ้านC]
+    const coords = points.map((p) => `${p.lng},${p.lat}`).join(";");
+    const response = await fetch(`https://router.project-osrm.org/table/v1/driving/${coords}?sources=0&annotations=distance`);
+    const data: any = await response.json();
+    if (data.code !== "Ok") throw new Error("OSRM error");
+
+    // road[0] = จุดที่อยู่ road[1] = บ้านแรก, road[2] = บ้านที่สอง ......
+    const road = data.distances[0];
+    for (let i = 0; i < orders.length; i++) {
+      if (road[i + 1] < road[nearest + 1]) {
+        nearest = i;
+      }
     }
-  }
-  return nearest;
+    return { index: nearest, km: road[nearest + 1] / 1000 }; //กม.
+  } catch {
+    // OSRM error ใช้ระยะเส้นตรงแบบเดิม
+    nearest = 0;
+    for (let i = 0; i < orders.length; i++) {
+      if (distance_km(current_point, orders[i]) < distance_km(current_point, orders[nearest])) {
+        nearest = i;
+      }
+    }
+    return { index: nearest, km: distance_km(current_point, orders[nearest]) };
+  }  // return index 
 }
-//index เริ่มที่ 1 ไม่ใช่ 0 เพราะตัวลำดับ 0 ถูกสมมติให้เป็นตัวใกล้สุดไว้แล้วตั้งแต่แรก
-// orders[i]
-// orders[i].id 
 
 
  
@@ -153,15 +174,16 @@ router.post("/plan", async (req, res) => {
 
       // ลูปใน: 1 รอบ = เลือก 1 บ้าน (หยุดเมื่อครบ 3 บ้าน หรือไม่มีออเดอร์เหลือ)
       while (task_orders.length < max_orders && waiting_orders.length > 0) {
-        // หาว่าบ้านไหนใกล้ "จุดที่ยืนอยู่ตอนนี้" ที่สุด (ได้ตำแหน่งใน array)
-        const index = find_nearest(current_point, waiting_orders);
+        // หาว่าบ้านไหนใกล้ "จุดที่ยืนอยู่ตอนนี้" ที่สุด (ตามถนนจริง)
+        // nearest = { index: บ้านหลังไหน, km: ห่างกี่กม. }
+        const nearest = await find_nearest(current_point, waiting_orders);
 
         // ดึงบ้านนั้นออกจากรายการรอ (จะได้ไม่ถูกเลือกซ้ำ)
-        const next_order = waiting_orders.splice(index, 1)[0];
+        const next_order = waiting_orders.splice(nearest.index, 1)[0];
 
-        total_km += distance_km(current_point, next_order); // บวกระยะทางที่วิ่งไป
-        task_orders.push(next_order);                       // ใส่บ้านนั้นเข้าใบงาน
-        current_point = next_order;                         // ย้ายไปยืนที่บ้านนั้น แล้วหาบ้านถัดไปจากตรงนี้
+        total_km += nearest.km;          // บวกระยะทางที่วิ่งไป (ตามถนนจริง)
+        task_orders.push(next_order);    // ใส่บ้านนั้นเข้าใบงาน
+        current_point = next_order;      // ย้ายไปยืนที่บ้านนั้น แล้วหาบ้านถัดไปจากตรงนี้
       }
 
       //4 คำนวณตัวเลขของใบงาน -----
