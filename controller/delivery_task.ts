@@ -102,6 +102,12 @@ async function find_nearest(current_point: any, orders: any[]) {
     const data: any = await response.json();
     if (data.code !== "Ok") throw new Error("OSRM error");
 
+    /*data = {
+      code: "Ok",
+      distances: [ [0, 900, 300, 500] ],
+      ...
+    }*/
+
     // road[0] = จุดที่อยู่ road[1] = บ้านแรก, road[2] = บ้านที่สอง ......
     const road = data.distances[0];
     for (let i = 0; i < orders.length; i++) {
