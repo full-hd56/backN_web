@@ -8,7 +8,8 @@ const max_orders = 3;    // ใบงานละไม่เกิน 3 ออ�
 const speed_kmh = 30;    // ความเร็วไรเดอร์ (กม./ชม.)
 const box_price = 65;    // ราคาขายต่อกล่อง
 const box_cost = 40;     // ต้นทุนต่อกล่อง
-const colors = ["#EF4444", "#16A34A", "#2563EB", "#EA580C", "#9333EA", "#0891B2"]; // สีเส้นทาง
+const colors = [
+  "#EF4444", "#16A34A", "#2563EB", "#EA580C", "#9333EA", "#0891B2","#DB2777", "#CA8A04", "#111827", "#7C2D12", "#65A30D", "#1E3A8A",]; // สีเส้นทาง
  
 // ดูใบงานทั้งหมด  GET /api/delivery_tasks
 router.get("/", async (req, res) => {
