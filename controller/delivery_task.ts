@@ -160,7 +160,8 @@ router.post("/plan", async (req, res) => {
 
     //2 เลขใบงานวันนี้ เช่น TASK-20261019-01
     // today  วันที่วันนี้ เช่น 20261019
-    const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    //const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+      const today = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Bangkok" }).replace(/-/g, "");
 
     // นับว่าวันนี้มีใบงานไปแล้วกี่ใบ จะได้ตั้งเลขต่อ ไม่ซ้ำ
     // เช่น มีแล้ว 2 ใบ  ใบถัดไปเป็น -03
